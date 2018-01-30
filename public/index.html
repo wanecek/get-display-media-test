@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebRTC Screen Sharing Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      /* For presentational purposes */
+      html, body { height: 100%; }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      section {
+        display: flex;
+        justify-content: center;
+        padding: 1em;
+      }
+
+      .flex-column {
+        flex-direction: column;
+      }
+
+      video { display: none; }
+      video[src] { display: block; }
+    </style>
+  </head>
+
+  <body class="flex-column">
+    <section>
+      <!-- Will be populated with the videostream of the sender -->
+      <video id="video-playback" autoplay muted></video>
+    </section>
+    <section>
+      <input id="start-call-button" type="button" disabled value="Share Screen"/>
+      <input id="end-call-button" type="button" disabled value="End Call"/>
+    </section>
+
+    <!-- SHIM to isolate browser from spec inconsistencies. -->
+    <script src="./adapter_no_edge_global.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>

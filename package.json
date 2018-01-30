@@ -1,0 +1,16 @@
+{
+  "name": "h264-encoding-issue-demo",
+  "version": "1.0.0",
+  "description": "Composes a self-containing demo, reproducing the issue of poor performance of h264 encoding of screensharing ın Chrome on Windows.",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "author": "Wilhelm Wanecek",
+  "dependencies": {
+    "express": "^4.14.0",
+    "ws": "^1.1.4"
+  }
+}
