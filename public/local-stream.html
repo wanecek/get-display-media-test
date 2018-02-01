@@ -50,9 +50,21 @@
   </section>
 
   <script>
+    const USE_USER_MEDIA_AS_MEDIA_STREAM = false;
+
     // DOM references
-    var videoElement = document.querySelector('video');
-    var startCallButton = document.querySelector('button');
+    const videoElement = document.querySelector('video');
+    const startCallButton = document.querySelector('button');
+
+    /**
+     * Generate a MediaStream sharing the screen
+     * @returns {Promise<MediaStream>}
+     */
+    function getMediaStream() {
+      return USE_USER_MEDIA_AS_MEDIA_STREAM
+        ? navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        : navigator.getDisplayMedia({ video: true })
+    }
 
     // Initiate a call, sharing the screen
     function initScreenShare() {

@@ -11,6 +11,8 @@ The purpose of this repository is to test the implementation of `navigator.getDi
 
 In an attempt to future-proof a project for the support of `getDisplayMedia`, I've been playing around with the **experimental** implementation in the latest (as of 2018-02-01) stable release of MS Edge, but have been unsuccessful in getting it to work as expected.
 
+To compare the result with that of `navigator.mediaDevices.getUserMedia`, modify the flag `USE_USER_MEDIA_AS_MEDIA_STREAM` in `./public/local-stream.html:53` or `./public/main.js:4`.
+
 ### Start the server
 
 ```bash
@@ -41,4 +43,4 @@ A video appears in the middle of the tab of the receiving tab, reflecting the co
 1. Edge allows assigning an objectURL of a `MediaStream` as the `src` of an HTMLVideoElement
 1. Edge supports ES6 syntax
 1. Edge does not treat websites on self-signed certificates differently than authorized certificates, once the user has confirmed entering the site.
-1. Edge should not treat `MediaStream` of `getDisplayMedia` differently than that of `getUserMedia`. To test this, change the flag `USE_USER_MEDIA_AS_MEDIA_STREAM` in `./public/main.js:4` and run the test with WebRTC streams again. I've found this assumption to be false.
+1. Edge should not treat `MediaStream` of `getDisplayMedia` differently than that of `getUserMedia`. So far, I've found this assumption to be false.
