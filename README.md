@@ -9,7 +9,7 @@ The purpose of this repository is to test the implementation of `navigator.getDi
 
 ## Replicating the issues
 
-In an attempt to future-proof a project for the support of `getDisplayMedia`, I've been playing around with the **experimental** implementation in the latest (as of 2018-02-01) stable release of MS Edge, but have been unsuccessful in getting it to work as expected.
+In an attempt to future-proof a project for the support of `getDisplayMedia`, I've been playing around with the **experimental** implementation in the latest (as of 2018-02-01) stable release of MS Edge, but have been unsuccessful in getting it to work as expected (Edge 41.16299.15.0; EdgeHTML 16.16299; Two different PCs both running Windows 10).
 
 To compare the result with that of `navigator.mediaDevices.getUserMedia`, modify the flag `USE_USER_MEDIA_AS_MEDIA_STREAM` in `./public/local-stream.html:53` or `./public/main.js:4`.
 
@@ -36,6 +36,19 @@ Open `https://localhost:8000/local-stream.html` in two different tabs. One of th
 #### Expected Result
 
 A video appears in the middle of the tab of the receiving tab, reflecting the content of the getDisplayMedia `MediaStream`.
+
+#### Outcome
+
+So far, I have consistently been thrown the following error: (main.js:134:7 pointing to the start of the line adding the stream to the `peerConn`).
+
+```json
+{
+  "description": "Could not complete the operation due to error c004e001.",
+  "message": "Could not complete the operation due to error c004e001.",
+  "number": -1073422335,
+  "stack": "Error: Could not complete the operation due to error c004e001. at Anonymous Function (https://x.x.x.x:8000/public/main.js:134:7)"
+}
+```
 
 ## Assumptions made
 
