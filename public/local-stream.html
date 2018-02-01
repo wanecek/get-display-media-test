@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<!-- This demonstrates getting a media -->
+<head>
+  <meta charset="utf-8">
+  <title>Local Screen Sharing Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* For presentational purposes */
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    section {
+      display: flex;
+      justify-content: center;
+      padding: 1em;
+    }
+
+    .flex-column {
+      flex-direction: column;
+    }
+
+    video {
+      display: none;
+    }
+
+    video[src] {
+      display: block;
+    }
+
+  </style>
+</head>
+
+<body class="flex-column">
+  <section>
+    <!-- Will be populated with the videostream of the sender -->
+    <video id="video-playback" autoplay muted></video>
+  </section>
+  <section>
+    <button id="share-screen-button">Share Screen</button>
+  </section>
+
+  <script>
+    // DOM references
+    var videoElement = document.getElementById('video-playback');
+    var startCallButton = document.getElementById('share-screen-button');
+
+    // Initiate a call, sharing the screen
+    function initScreenShare() {
+      navigator.getDisplayMedia({ video: true })
+        .then(function(stream) {
+          console.log('MediaStream obtained', stream);
+          var url = URL.createObjectURL(stream);
+          console.log('ObjectURL created', url);
+          videoElement.src = url;
+          console.log(
+            'ObjectURL assigned as source to videoElement', videoElement
+          );
+        })
+        .catch(console.error);
+    }
+
+    window.addEventListener('load', function addEventListeners() {
+      startCallButton.addEventListener('click', initScreenShare);
+    });
+  </script>
+</body>
+
+</html>

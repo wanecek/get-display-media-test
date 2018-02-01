@@ -1,46 +1,23 @@
-// @ts-check
+// Set this flag to true if you want to use the more widely-implemented
+// navigator.mediaDevices.getUserMedia instead of navigator.getDisplayMedia as
+// the source of the MediaStream to add to the RTCPeerConnection
+const USE_USER_MEDIA_AS_MEDIA_STREAM = false;
 
-const peerConnectionConfig = {
+// Initiate a WebSocket connection used for sending and receiving WebRTC-related
+// messages between the clients (signaling)
+const signalingChannel = new WebSocket(`wss://${window.location.host}`);
+// Free-to-use stun servers used in establishing an RTCPeerConnection
+const rtcConfiguration = {
   iceServers: [
     { urls: 'stun:stun.services.mozilla.com' },
     { urls: 'stun:stun.l.google.com:19302' },
   ],
 };
-
-// Initiate WebSocket connection. This is used for sending and receiving SDP
-// messages between the clients
-const wsConn = new WebSocket(`wss://${window.location.host}`);
-
-let localVideoStream; // MediaStream
-let peerConn; // RTCPeerConnection
-
 // DOM references
 const videoElement = document.getElementById('video-playback');
-const startCallButton = document.getElementById('start-call-button');
-const endCallButton = document.getElementById('end-call-button');
-
-/**
- * Functions for WebRTC communication
- * ============================================================= */
-
-/**
- * Close PeerConnection and reset UI
- * @param {RTCPeerConnection} peerConnection
- */
-function endCall(peerConnection) {
-  peerConnection.close();
-  peerConnection = null;
-  startCallButton.removeAttribute('disabled');
-  endCallButton.setAttribute('disabled', 'true');
-
-  if (localVideoStream) {
-    localVideoStream.getTracks().forEach(track => {
-      track.stop();
-    });
-  }
-
-  videoElement.src = '';
-}
+const startCallButton = document.getElementById('share-screen-button');
+// RTCPeerConnection
+let peerConn;
 
 /**
  * Send offer SDP-message via WebSocket connection
@@ -50,9 +27,7 @@ function createAndSendOffer(peerConnection) {
   peerConnection.createOffer(offer => {
     peerConnection.setLocalDescription(
       offer,
-      () => {
-        wsConn.send(JSON.stringify({ sdp: offer }));
-      },
+      () => signalingChannel.send(JSON.stringify(offer)),
       console.error
     );
   }, console.error);
@@ -66,84 +41,101 @@ function createAndSendAnswer(peerConnection) {
   peerConnection.createAnswer(answer => {
     peerConnection.setLocalDescription(
       answer,
-      () => {
-        wsConn.send(JSON.stringify({ sdp: answer }));
-      },
+      () => signalingChannel.send(JSON.stringify(answer)),
       console.error
     );
   }, console.error);
 }
 
-function prepareCall() {
-  peerConn = new RTCPeerConnection(peerConnectionConfig);
+/**
+ * Create a connection with attached callbacks, forwarding any ice candidates
+ * and displaying any received video-stream in the <video> element
+ * @param {RTCConfiguration} config
+ * @returns {RTCPeerConnection}
+ */
+function createPeerConnection(config) {
+  const connection = new RTCPeerConnection(config);
 
   // send any ice candidates to the other peer
-  peerConn.onicecandidate = evt => {
+  connection.onicecandidate = evt => {
     if (!evt || !evt.candidate) return;
-    wsConn.send(JSON.stringify({ candidate: evt.candidate }));
+    signalingChannel.send(JSON.stringify(evt.candidate));
   };
 
   // once remote stream arrives, update UI and show it in the video element
-  peerConn.onaddstream = evt => {
-    // Update button states
+  connection.onaddstream = evt => {
     startCallButton.setAttribute('disabled', 'true');
-    endCallButton.removeAttribute('disabled');
     // set remote video stream as source for video element
     videoElement.src = URL.createObjectURL(evt.stream);
   };
+
+  return connection;
 }
 
-function answerCall() {
-  prepareCall();
-  setTimeout(() => createAndSendAnswer(peerConn), 1000); // "hack" to avoid race-condition
-}
+signalingChannel.onmessage = function onWsConnMessage(evt) {
+  // if no peerConn is set the client is set, we should answer with an adp message
+  if (!peerConn) {
+    peerConn = createPeerConnection(rtcConfiguration);
+    setTimeout(() => createAndSendAnswer(peerConn), 1000);
+  }
 
-wsConn.onmessage = function onWsConnMessage(evt) {
-  // if no peerConn is set, the client is receiving a call
-  if (!peerConn) answerCall();
   const signal = JSON.parse(evt.data);
-  if (signal.sdp) {
-    console.log('Received SDP from remote peer.', signal.sdp);
-    peerConn.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-  } else if (signal.candidate) {
+  if ('sdp' in signal) {
+    console.log('Received SDP from remote peer.', signal);
+    peerConn.setRemoteDescription(new RTCSessionDescription(signal));
+  } else if ('candidate' in signal) {
     console.log('Received ICECandidate from remote peer.');
-    peerConn.addIceCandidate(new RTCIceCandidate(signal.candidate));
-  } else if (signal.closeConnection) {
-    console.log('Received "closeConnection" signal from remote peer.');
-    endCall(peerConn);
+    peerConn.addIceCandidate(new RTCIceCandidate(signal));
   }
 };
 
+/**
+ * Generate a MediaStream sharing the screen
+ * @returns {Promise<MediaStream>}
+ */
 function getDisplayMedia() {
   if ('getDisplayMedia' in navigator) {
     return navigator.getDisplayMedia({ video: true });
-    // return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
   }
 
-  // For firefox
-  return navigator.mediaDevices.getUserMedia({
-    video: { mediaSource: 'screen', width: 1920, height: 1080 },
-  });
+  return Promise.reject(
+    new Error('getDisplayMedia is not supported by your browser')
+  );
+}
+
+/**
+ * Generate a MediaStream sharing the screen
+ * @returns {Promise<MediaStream>}
+ */
+function getUserMedia() {
+  return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+}
+
+/**
+ * Generate a MediaStream sharing the screen
+ * @returns {Promise<MediaStream>}
+ */
+function getMediaStream() {
+  return USE_USER_MEDIA_AS_MEDIA_STREAM ? getUserMedia() : getDisplayMedia();
 }
 
 // Initiate a call, sharing the screen
 function initiateCall() {
-  prepareCall();
-  getDisplayMedia()
+  const peerConnection = createPeerConnection(rtcConfiguration);
+  // Store a reference to the peer connection
+  peerConn = peerConnection;
+  getMediaStream()
     .then(stream => {
-      peerConn.addStream(localVideoStream);
-      createAndSendOffer(peerConn);
+      // expose stream to global object for debugging in Edge
+      window.stream = stream;
+      // Add stream to the peerConnection
+      peerConnection.addStream(stream);
+      // broadcast offer to other clients on the signalingChannel
+      createAndSendOffer(peerConnection);
     })
     .catch(console.error);
 }
 
-function addEventListeners() {
-  startCallButton.removeAttribute('disabled');
+window.addEventListener('load', function addEventListeners() {
   startCallButton.addEventListener('click', initiateCall);
-  endCallButton.addEventListener('click', () => {
-    endCall(peerConn);
-    wsConn.send(JSON.stringify({ closeConnection: true }));
-  });
-}
-
-window.addEventListener('load', addEventListeners);
+});

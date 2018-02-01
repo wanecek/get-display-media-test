@@ -1,7 +1,7 @@
 {
-  "name": "h264-encoding-issue-demo",
+  "name": "ms-edge-get-display-capture-demo",
   "version": "1.0.0",
-  "description": "Composes a self-containing demo, reproducing the issue of poor performance of h264 encoding of screensharing ın Chrome on Windows.",
+  "description": "An experiment in using the experimental getDisplayMedia in edge",
   "main": "server.js",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
   "license": "MIT",
   "author": "Wilhelm Wanecek",
   "dependencies": {
-    "express": "^4.14.0",
-    "ws": "^1.1.4"
+    "express": "^4.16.2",
+    "ws": "^4.0.0"
   }
 }

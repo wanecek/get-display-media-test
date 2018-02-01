@@ -1,10 +1,21 @@
+/**
+ * Starts up a WebSocket and a HTTP Server
+ *
+ * The express HTTP server will expose the HTML and Javascript
+ * from the ./public directory
+ *
+ * The WebSocket server acts as a signaling server for the WebRTC communication,
+ * and will relay messages from the sender to the other clients.
+ */
 const express = require('express');
 const fs = require('fs');
 const https = require('https');
-const WebSocketServer = require('ws').Server;
+const WebSocket = require('ws');
+
+const PORT = 8000;
 
 const app = express();
-const options = {
+const serverOptions = {
   key: fs.readFileSync('./ssl/key.pem'),
   cert: fs.readFileSync('./ssl/cert.pem'),
   passphrase: '123456789',
@@ -22,38 +33,42 @@ app.use(function httpsRedirectMiddleware(req, res, next) {
   }
 });
 
-// start server (listen on port 443 - SSL)
-const sslSrv = https.createServer(options, app).listen(3333);
-console.log('The HTTPS server is up and running');
+const httpsServer = https.createServer(serverOptions, app).listen(PORT);
+const url = 'https://localhost:' + PORT;
+console.log('HTTPS server is up and running on ' + url);
 
-// create the WebSocket server
-const wss = new WebSocketServer({ server: sslSrv });
+// Start up the WebSocket server
+const wssServer = new WebSocket.Server({ server: httpsServer });
 console.log('WebSocket Secure server is up and running.');
 
-wss.on('connection', function onWsConnection(client) {
-  console.log('A new WebSocket client was connected.');
+wssServer.on('connection', function onWsConnection(client) {
+  console.log(
+    'A new WebSocket client was connected. Clients connected:',
+    this.clients.size
+  );
+
+  // Listen to messages from the connected client
   client.on('message', function onIncomingWsMessage(message) {
-    /** broadcast message to all clients */
-    wss.broadcast(message, client);
+    console.log('Relaying message', message);
+    wssServer.broadcast(message, client);
   });
 });
 
 // broadcasting the message to all WebSocket clients.
-wss.broadcast = function onWsBroadcast(data, exclude) {
-  let client = null;
-  const n = this.clients
-    ? this.clients.length
-    : 0;
+wssServer.broadcast = function onWsBroadcast(data, exclude) {
+  const numberOfClients = this.clients ? this.clients.size : 0;
 
-  if (n < 1) return;
+  // If there's only 1 or 0 clients connected there's no need to broadcast
+  if (numberOfClients < 2) return;
 
-  console.log('Broadcasting message to all ' + n + ' WebSocket clients.');
+  console.log(
+    'Broadcasting message to ' + numberOfClients + ' WebSocket clients.'
+  );
 
-  for (let i = 0; i < n; i += 1) {
-    client = this.clients[i];
-    // don't send the message to the sender...
-    if (client === exclude) continue;
+  this.clients.forEach(function broadCastToClient(client) {
+    // Avoid sending back the message to the sender
+    if (client === exclude) return;
     if (client.readyState === client.OPEN) client.send(data);
     else console.error('Error: the client state is ' + client.readyState);
-  }
+  });
 };
