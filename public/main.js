@@ -13,9 +13,11 @@ const rtcConfiguration = {
     { urls: 'stun:stun.l.google.com:19302' },
   ],
 };
+
 // DOM references
-const videoElement = document.getElementById('video-playback');
-const startCallButton = document.getElementById('share-screen-button');
+const videoElement = document.querySelector('video');
+const startCallButton = document.querySelector('button');
+
 // RTCPeerConnection
 let peerConn;
 

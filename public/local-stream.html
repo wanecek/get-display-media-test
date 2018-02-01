@@ -43,16 +43,16 @@
 <body class="flex-column">
   <section>
     <!-- Will be populated with the videostream of the sender -->
-    <video id="video-playback" autoplay muted></video>
+    <video src="" autoplay muted></video>
   </section>
   <section>
-    <button id="share-screen-button">Share Screen</button>
+    <button>Share Screen</button>
   </section>
 
   <script>
     // DOM references
-    var videoElement = document.getElementById('video-playback');
-    var startCallButton = document.getElementById('share-screen-button');
+    var videoElement = document.querySelector('video');
+    var startCallButton = document.querySelector('button');
 
     // Initiate a call, sharing the screen
     function initScreenShare() {
