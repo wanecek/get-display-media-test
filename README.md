@@ -1,6 +1,6 @@
 # Test of navigator.getDisplayMedia Screenshare
 
-The purpose of this repository is to test the use of `navigator.getDisplayMedia` in MS Edge.
+The purpose of this repository is to test the implementation of `navigator.getDisplayMedia` in MS Edge. It also constitutes two different, condensed scenarios relying on the feature, and compares it to `navigator.mediaDevices.getUserMedia`.
 
 ## Steps to prepare
 
@@ -8,6 +8,8 @@ The purpose of this repository is to test the use of `navigator.getDisplayMedia`
 2. Install dependencies using `npm install`
 
 ## Replicating the issues
+
+In an attempt to future-proof a project for the support of `getDisplayMedia`, I've been playing around with the **experimental** implementation in the latest (as of 2018-02-01) stable release of MS Edge, but have been unsuccessful in getting it to work as expected.
 
 ### Start the server
 
