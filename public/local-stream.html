@@ -50,7 +50,7 @@
   </section>
 
   <script>
-    const USE_USER_MEDIA_AS_MEDIA_STREAM = false;
+    const USE_USER_MEDIA_AS_MEDIA_STREAM = true;
 
     // DOM references
     const videoElement = document.querySelector('video');
@@ -70,12 +70,11 @@
     function initScreenShare() {
       navigator.getDisplayMedia({ video: true })
         .then(function(stream) {
-          console.log('MediaStream obtained', stream);
-          var url = URL.createObjectURL(stream);
-          console.log('ObjectURL created', url);
-          videoElement.src = url;
+          window._stream = stream;
+          console.log('MediaStream obtained and stored to window._stream', stream);
+          videoElement.srcObject = stream;
           console.log(
-            'ObjectURL assigned as source to videoElement', videoElement
+            'MediaStream assigned as srcObject of videoElement', videoElement
           );
         })
         .catch(console.error);

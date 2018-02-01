@@ -68,7 +68,7 @@ function createPeerConnection(config) {
   connection.onaddstream = evt => {
     startCallButton.setAttribute('disabled', 'true');
     // set remote video stream as source for video element
-    videoElement.src = URL.createObjectURL(evt.stream);
+    videoElement.srcObject = evt.stream;
   };
 
   return connection;
