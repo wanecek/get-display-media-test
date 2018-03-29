@@ -31,7 +31,7 @@ A video appears in the middle of the screen, reflecting the content of the getDi
 
 ### Test with WebRTC streams
 
-Open `https://localhost:8000/local-stream.html` in two different tabs. One of the tabs will be the reciever, and one the transmitter. You will need to confirm the use of self-signed certs. In one of the tabs,try clicking the "Share Screen" button. This is now the transmitting tab.
+Open `https://localhost:8000/rtc-stream.html` in two different tabs. One of the tabs will be the reciever, and one the transmitter. You will need to confirm the use of self-signed certs. In one of the tabs,try clicking the "Share Screen" button. This is now the transmitting tab.
 
 #### Expected Result
 
