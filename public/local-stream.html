@@ -60,16 +60,37 @@
      * Generate a MediaStream sharing the screen
      * @returns {Promise<MediaStream>}
      */
+    function getDisplayMedia() {
+      if ('getDisplayMedia' in navigator) {
+        return navigator.getDisplayMedia({ video: true });
+      }
+
+      return Promise.reject(
+        new Error('getDisplayMedia is not supported by your browser')
+      );
+    }
+
+    /**
+     * Generate a MediaStream sharing the screen
+     * @returns {Promise<MediaStream>}
+     */
+    function getUserMedia() {
+      var constraints = { video: true, audio: false };
+      return navigator.mediaDevices.getUserMedia(constraints);
+    }
+
+    /**
+     * Generate a MediaStream sharing the screen
+     * @returns {Promise<MediaStream>}
+     */
     function getMediaStream() {
-      return USE_USER_MEDIA_AS_MEDIA_STREAM
-        ? navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-        : navigator.getDisplayMedia({ video: true })
+      return USE_USER_MEDIA_AS_MEDIA_STREAM ? getUserMedia() : getDisplayMedia();
     }
 
     // Initiate a call, sharing the screen
     function initScreenShare() {
-      navigator.getDisplayMedia({ video: true })
-        .then(function(stream) {
+      getMediaStream()
+        .then(function (stream) {
           window._stream = stream;
           console.log('MediaStream obtained and stored to window._stream', stream);
           videoElement.srcObject = stream;
