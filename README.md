@@ -11,7 +11,7 @@ The purpose of this repository is to test the implementation of `navigator.getDi
 
 In an attempt to future-proof a project for the support of `getDisplayMedia`, I've been playing around with the **experimental** implementation in the latest (as of 2018-02-01) stable release of MS Edge, but have been unsuccessful in getting it to work as expected (Edge 41.16299.15.0; EdgeHTML 16.16299; Two different PCs both running Windows 10).
 
-To compare the result with that of `navigator.mediaDevices.getUserMedia`, modify the flag `USE_USER_MEDIA_AS_MEDIA_STREAM` in `./public/local-stream.html:53` or `./public/main.js:4`.
+To compare the result with that of `navigator.getUserMedia`, toggle the flag `USE_USER_MEDIA_AS_MEDIA_STREAM` in `./public/local-stream.html:53` or `./public/main.js:4`.
 
 ### Start the server
 
