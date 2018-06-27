@@ -1,6 +1,8 @@
 # Test of navigator.getDisplayMedia Screenshare
 
-The purpose of this repository is to test the implementation of `navigator.getDisplayMedia` in MS Edge. It also constitutes two different, condensed scenarios relying on the feature, and compares it to `navigator.mediaDevices.getUserMedia`.
+The purpose of this repository is to test the implementation of `navigator.getDisplayMedia`
+in MS Edge. It contains two different, condensed scenarios relying on the feature,
+and allows mocking `navigator.getDisplayMedia` with `navigator.mediaDevices.getUserMedia`.
 
 ## Steps to prepare
 
@@ -9,9 +11,8 @@ The purpose of this repository is to test the implementation of `navigator.getDi
 
 ## Replicating the issues
 
-In an attempt to future-proof a project for the support of `getDisplayMedia`, I've been playing around with the **experimental** implementation in the latest (as of 2018-02-01) stable release of MS Edge, but have been unsuccessful in getting it to work as expected (Edge 41.16299.15.0; EdgeHTML 16.16299; Two different PCs both running Windows 10).
-
-To compare the result with that of `navigator.getUserMedia`, toggle the flag `USE_USER_MEDIA_AS_MEDIA_STREAM` in `./public/local-stream.html:53` or `./public/main.js:4`.
+To compare the result with that of `navigator.getUserMedia`, toggle the flag
+`USE_USER_MEDIA_AS_MEDIA_STREAM` in `./public/local-stream.html:54` or `./public/rtc-stream.js:4`.
 
 ### Start the server
 
@@ -19,7 +20,7 @@ To compare the result with that of `navigator.getUserMedia`, toggle the flag `US
 npm start
 ```
 
-The port of the server can be changed in `./server.js` by changing the `PORT` constant.
+The port of the server can be configured through the `PORT` env variable, or by explicitly changing the `PORT` constant in `./server.js:15`.
 
 ### Basic test
 
@@ -29,6 +30,16 @@ Open `https://localhost:8000/local-stream.html`. You will need to confirm the us
 
 A video appears in the middle of the screen, reflecting the content of the getDisplayMedia `MediaStream`.
 
+#### Outcome on Edge 42.17134.1.0 with EdgeHTML 17.17134
+
+A `MediaStreamError` (`AbortError`) is thrown:
+
+```javascript
+[object MediaStreamError]: { constraintName: null, message, null, name: "AbortError" }
+```
+
+This has been reported in [Issue #17357055](https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/17357055/) on [issues.microsoftedge.com](http://issues.microsoftedge.com/).
+
 ### Test with WebRTC streams
 
 Open `https://localhost:8000/rtc-stream.html` in two different tabs. One of the tabs will be the reciever, and one the transmitter. You will need to confirm the use of self-signed certs. In one of the tabs,try clicking the "Share Screen" button. This is now the transmitting tab.
@@ -37,9 +48,9 @@ Open `https://localhost:8000/rtc-stream.html` in two different tabs. One of the 
 
 A video appears in the middle of the tab of the receiving tab, reflecting the content of the getDisplayMedia `MediaStream`.
 
-#### Outcome
+#### Outcome on Edge 41.16299.15.0 with EdgeHTML 16.16299
 
-So far, I have consistently been thrown the following error: (main.js:134:7 pointing to the start of the line adding the stream to the `peerConn`).
+The following error is consistently thrown the following at main.js:134:7 pointing to the start of the line adding the stream to the `peerConn`:
 
 ```json
 {
@@ -50,10 +61,14 @@ So far, I have consistently been thrown the following error: (main.js:134:7 poin
 }
 ```
 
+#### Outcome on Edge 42.17134.1.0 with EdgeHTML 17.17134
+
+Same error as in the basic test for these versions (`MediaStreamError` - `AbortError`).
+
 ## Assumptions made
 
 1. Edge allows creating an objectURL for a `MediaStream`
 1. Edge allows assigning an objectURL of a `MediaStream` as the `src` of an HTMLVideoElement
-1. Edge supports ES6 syntax
+1. Edge supports relevant ES6 syntax
 1. Edge does not treat websites on self-signed certificates differently than authorized certificates, once the user has confirmed entering the site.
 1. Edge should not treat `MediaStream` of `getDisplayMedia` differently than that of `getUserMedia`. So far, I've found this assumption to be false.

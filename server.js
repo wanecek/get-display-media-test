@@ -12,7 +12,7 @@ const fs = require('fs');
 const https = require('https');
 const WebSocket = require('ws');
 
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 const app = express();
 const serverOptions = {

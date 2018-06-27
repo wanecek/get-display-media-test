@@ -1,7 +1,7 @@
 // Set this flag to true if you want to use the more widely-implemented
 // navigator.mediaDevices.getUserMedia instead of navigator.getDisplayMedia as
-// the source of the MediaStream to add to the RTCPeerConnection
-const USE_USER_MEDIA_AS_MEDIA_STREAM = false;
+// the source of the MediaStream to add to the RTCPeerConnection.
+const MOCK_GET_DISPLAY_MEDIA = false;
 
 // Initiate a WebSocket connection used for sending and receiving WebRTC-related
 // messages between the clients (signaling)
@@ -26,13 +26,14 @@ let peerConn;
  * @param {RTCPeerConnection} peerConnection
  */
 function createAndSendOffer(peerConnection) {
-  peerConnection.createOffer(offer => {
-    peerConnection.setLocalDescription(
-      offer,
-      () => signalingChannel.send(JSON.stringify(offer)),
-      console.error
-    );
-  }, console.error);
+  return peerConnection
+    .createOffer()
+    .then(offer => {
+      return peerConnection
+        .setLocalDescription(offer)
+        .then(() => signalingChannel.send(JSON.stringify(offer)));
+    })
+    .catch(console.error);
 }
 
 /**
@@ -40,13 +41,14 @@ function createAndSendOffer(peerConnection) {
  * @param {RTCPeerConnection} peerConnection
  */
 function createAndSendAnswer(peerConnection) {
-  peerConnection.createAnswer(answer => {
-    peerConnection.setLocalDescription(
-      answer,
-      () => signalingChannel.send(JSON.stringify(answer)),
-      console.error
-    );
-  }, console.error);
+  return peerConnection
+    .createAnswer()
+    .then(answer => {
+      return peerConnection
+        .setLocalDescription(answer)
+        .then(() => signalingChannel.send(JSON.stringify(answer)));
+    })
+    .catch(console.error);
 }
 
 /**
@@ -66,6 +68,7 @@ function createPeerConnection(config) {
 
   // once remote stream arrives, update UI and show it in the video element
   connection.onaddstream = evt => {
+    console.log('Stream received from remote', evt);
     startCallButton.setAttribute('disabled', 'true');
     // set remote video stream as source for video element
     videoElement.srcObject = evt.stream;
@@ -118,7 +121,7 @@ function getUserMedia() {
  * @returns {Promise<MediaStream>}
  */
 function getMediaStream() {
-  return USE_USER_MEDIA_AS_MEDIA_STREAM ? getUserMedia() : getDisplayMedia();
+  return MOCK_GET_DISPLAY_MEDIA ? getUserMedia() : getDisplayMedia();
 }
 
 // Initiate a call, sharing the screen

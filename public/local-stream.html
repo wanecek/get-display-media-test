@@ -50,7 +50,8 @@
   </section>
 
   <script>
-    const USE_USER_MEDIA_AS_MEDIA_STREAM = false;
+    // Mock getDisplayMedia with getUserMedia?
+    const MOCK_GET_DISPLAY_MEDIA = false;
 
     // DOM references
     const videoElement = document.querySelector('video');
@@ -84,7 +85,7 @@
      * @returns {Promise<MediaStream>}
      */
     function getMediaStream() {
-      return USE_USER_MEDIA_AS_MEDIA_STREAM ? getUserMedia() : getDisplayMedia();
+      return MOCK_GET_DISPLAY_MEDIA ? getUserMedia() : getDisplayMedia();
     }
 
     // Initiate a call, sharing the screen
@@ -93,7 +94,8 @@
         .then(function (stream) {
           window._stream = stream;
           console.log('MediaStream obtained and stored to window._stream', stream);
-          videoElement.srcObject = stream;
+          // videoElement.srcObject = stream;
+          videoElement.src = URL.createObjectURL(stream);
           console.log(
             'MediaStream assigned as srcObject of videoElement', videoElement
           );
